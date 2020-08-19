@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(unbag2)
 
-# Default to C99
-if(NOT CMAKE_C_STANDARD)
-  set(CMAKE_C_STANDARD 99)
-endif()
-
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -18,11 +13,20 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
 
-add_executable(unbag2 src/unbag2.cpp)
+add_library(unbag_lib src/unbag_node.cpp src/pipe.cpp src/generic_subscription.cpp src/wild_msg.cpp)
+target_include_directories(unbag_lib PUBLIC
+                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                           $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(unbag_lib rclcpp pluginlib)
+
+add_executable(unbag2 src/unbag_main.cpp)
 target_include_directories(unbag2 PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(unbag2 rclcpp pluginlib)
+target_link_libraries(unbag2 unbag_lib)
 
 install(TARGETS unbag2
   DESTINATION lib/${PROJECT_NAME})
