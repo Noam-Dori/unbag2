@@ -6,7 +6,7 @@
 #include <unbag2/unbag_node.hpp>
 #include <unbag2/generic_subscription.hpp>
 #include <unbag2/wild_msg.hpp>
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 #include <rosbag2_cpp/reader.hpp>
 #include <rosbag2_cpp/readers/sequential_reader.hpp>
 #include <rosbag2_cpp/typesupport_helpers.hpp>
