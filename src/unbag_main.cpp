@@ -12,7 +12,7 @@ using unbag2::UnbagNode;
 int main(int argc, char ** argv)
 {
   init(argc, argv);
-  auto success = UnbagNode::run_on_args(argc, argv);
+  auto success = UnbagNode::run_on_args();
   shutdown();
   return success;
 }

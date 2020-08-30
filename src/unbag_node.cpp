@@ -31,11 +31,14 @@ using rosbag2_cpp::readers::SequentialReader;
 using rosbag2_cpp::get_typesupport_handle;
 using rosbag2_cpp::get_typesupport_library;
 using std::chrono_literals::operator""ms;
+using std::istream_iterator;
+using std::istringstream;
 using std::regex;
 using std::regex_replace;
 using std::shared_ptr;
 using std::string;
 using std::unordered_map;
+using std::vector;
 
 namespace unbag2
 {
@@ -44,7 +47,7 @@ UnbagNode::UnbagNode() : Node("unbag")
   declare_parameter<string>("mode", "post");
 }
 
-int UnbagNode::run_on_args(int argc, char ** argv)
+int UnbagNode::run_on_args()
 {
   auto unbag = std::make_shared<UnbagNode>();
   unbag->init_plugins();
@@ -56,13 +59,9 @@ int UnbagNode::run_on_args(int argc, char ** argv)
   auto mode = unbag->declare_parameter("mode", string());
   if (mode == "post")
   {
-    for (int i = 1; i < argc; i++)
+    istringstream file_param(unbag->declare_parameter<string>("files", ""));
+    for (const auto & path : vector<string>{istream_iterator<string>{file_param}, istream_iterator<string>{}})
     {
-      string path = argv[i];
-      if (*path.begin() == '_') // disables params
-      {
-        continue;
-      }
       unbag->add_source(path);
     }
     unbag->run_on_files();

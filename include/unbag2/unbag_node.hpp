@@ -18,11 +18,9 @@ class UnbagNode : public rclcpp::Node
 public:
   /**
    * \brief creates the unbag node and runs it according to the parameters set.
-   * \param argc argument count
-   * \param argv argument values
    * \return a success code for how well unbag ran.
    */
-  static int run_on_args(int argc, char ** argv);
+  static int run_on_args();
   /**
    * \brief constructs an unbag node.
    */

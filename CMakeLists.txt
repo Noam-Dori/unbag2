@@ -31,8 +31,10 @@ target_include_directories(unbag2 PUBLIC
 ament_target_dependencies(unbag2 rclcpp pluginlib)
 target_link_libraries(unbag2 unbag_lib)
 
-install(TARGETS unbag2
-  DESTINATION lib/${PROJECT_NAME})
+install(TARGETS unbag2 DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY cfg DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
