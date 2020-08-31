@@ -14,6 +14,9 @@
 
 namespace unbag2
 {
+/**
+ * \brief the ROS node responsible for "undoing" the bag files
+ */
 class UnbagNode : public rclcpp::Node
 {
 public:

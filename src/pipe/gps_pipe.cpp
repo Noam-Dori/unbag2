@@ -29,7 +29,7 @@ void GpsPipe::load_pipe_params(Node * node)
 {
   covariance_ = !node->declare_parameter<bool>(to_param("remove_covariance"), false);
   split_by_time_ = node->declare_parameter<double>(to_param("time"), -1);
-  file_name_ = node->declare_parameter<string>(to_param(""), "{topic}_{seq}.json");
+  file_name_ = node->declare_parameter<string>(to_param("file_name"), "{topic}_{seq}.json");
 }
 
 void GpsPipe::process(NavSatFix msg, const string & topic)
@@ -39,9 +39,9 @@ void GpsPipe::process(NavSatFix msg, const string & topic)
   {
     last_split_ = time;
   }
-  else if (time >= last_split_ + Duration(split_by_time_))
+  else if (split_by_time_ > 0 && time >= last_split_ + Duration(split_by_time_))
   {
-    last_split_ = time;
+    last_split_ += Duration(split_by_time_);
     on_bag_end();
   }
   if (out_.find(topic) == out_.end())

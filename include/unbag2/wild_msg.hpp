@@ -13,15 +13,35 @@
 
 namespace unbag2
 {
+/**
+ * \brief describes a deserializable message along with its topic and associated type.
+ */
 class WildMsg
 {
 public:
+  /**
+   * \brief wrap a serialized message
+   * \param data the serialized data
+   * \param topic the topic from which the data came from
+   * \param type the message type of the data.
+   */
   WildMsg(std::shared_ptr<rcutils_uint8_array_t> data, std::string topic, rosidl_message_type_support_t type);
 
+  /**
+   * \return the human readable message type of this message
+   */
   std::string type() const;
 
+  /**
+   * \return the topic where this message was obtained
+   */
   std::string topic() const;
 
+  /**
+   * \brief attempt to write this message into a deserialized form.
+   * \tparam Msg the type of the deserialized message
+   * \return the deserialized message.
+   */
   template<class Msg> Msg deserialize() const
   {
     Msg ret;

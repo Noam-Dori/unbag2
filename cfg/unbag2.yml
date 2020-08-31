@@ -1,3 +1,17 @@
 unbag2:
   ros__parameters:
-    files: ""
+    # the mode of unbag:
+    # "post": reads bag files (paths specified by "files" parameter) and parses their data into files.
+    # "live": directly subscribes to many topics and parses them directly into files. No bags in the middle.
+    mode: "post"
+    # when set to true, unbag will split all files by bag file
+    split_by_bag: false
+    gps_pipe:
+      # when set to true, if the covariance is unknown, remove it from the JSON entry
+      remove_covariance: false
+      # split the bag files by the set amount of seconds, if -1, the pipe will not split by time
+      time: -1
+      # the file name under which to save the JSON. some values will be substituted:
+      # {topic}: the fully qualified input topic, with slashes replaced by underscores.
+      # {seq} the sequence identifier of the file, if there are splits, this number represents this file's order in the list.
+      file_name: "{topic}_{seq}.json"

@@ -12,9 +12,17 @@
 
 namespace unbag2
 {
+/**
+ * \brief the interface class used to process ROS messages into static data.
+ */
 class Pipe
 {
 public:
+  /**
+   * \brief constructs a new pipe
+   * \param name the pipe's name.
+   * \note when implementing, you must set the name IN THE CONSTRUCTOR.
+   */
   explicit Pipe(std::string name);
   /**
    * \brief uses the node to load pipe specific parameters.
@@ -26,14 +34,35 @@ public:
    */
   bool enabled() const;
 
+  /**
+   * \brief whether or not msg can be processed by this pipe
+   * \param msg the serialized message to check
+   * \return true if msg can be processed, false otherwise.
+   */
   virtual bool can_process(const WildMsg & msg) = 0;
 
+  /**
+   * \brief process the wild message
+   * \param msg a message that satisfies can_process(msg) == true
+   */
   virtual void process(const WildMsg & msg) = 0;
 
+  /**
+   * \brief a signal given to the pipe when a bag finished processing,
+   *        and the user indicated they want to split by bag-file. Only happens in "post" mode.
+   */
   virtual void on_bag_end();
 
+  /**
+   * \brief A signal given to the pipe when unbag finished processing all bag files. Only happens in "post" mode.
+   */
   virtual void on_unbag_end();
 
+  /**
+   * \brief A utility that gets the message type of the class.
+   * \tparam Msg the class to check
+   * \return a human readable string of the message type.
+   */
   template <class Msg>
   static std::string get_msg_type()
   {
@@ -58,10 +87,19 @@ private:
   std::string prefix_;
 };
 
+/**
+ * \brief a useful interface for a pipe that processes only one type of messages.
+ * \tparam RosMsg the class of message this pipe processes
+ */
 template <class RosMsg>
 class PipeBase : public Pipe // pipe is not an interface so no virtual
 {
 public:
+  /**
+   * \brief constructs a new pipe
+   * \param name the pipe's name.
+   * \note when implementing, you must set the name IN THE CONSTRUCTOR.
+   */
   explicit PipeBase(const std::string& name) : Pipe(name)
   {
   }

@@ -14,11 +14,14 @@
 namespace unbag2
 {
 /**
- * \brief
+ * \brief a pipe specializing in converting GPS messages to JSON files.
  */
 class GpsPipe : public PipeBase<sensor_msgs::msg::NavSatFix>
 {
 public:
+  /**
+   * \brief construct a new GPS pipe. figures.
+   */
   GpsPipe();
 
   void load_pipe_params(rclcpp::Node * node) override;
@@ -36,9 +39,7 @@ private:
   Json::FastWriter writer_;
   std::string file_name_;
   rclcpp::Time last_split_{0};
-  void write_file(const boost::filesystem::path & path,
-                  const Json::Value & json_to_write,
-                  const std::string& topic,
+  void write_file(const boost::filesystem::path & path, const Json::Value & json_to_write, const std::string& topic,
                   const std::string& seq);
 };
 }
