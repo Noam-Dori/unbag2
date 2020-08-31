@@ -30,6 +30,10 @@ public:
 
   virtual void process(const WildMsg & msg) = 0;
 
+  virtual void on_bag_end();
+
+  virtual void on_unbag_end();
+
   template <class Msg>
   static std::string get_msg_type()
   {

@@ -44,6 +44,7 @@ namespace unbag2
 UnbagNode::UnbagNode() : Node("unbag"), plugin_loader_("unbag2","unbag2::Pipe")
 {
   declare_parameter<string>("mode", "post");
+  declare_parameter<bool>("split_by_bag",false);
 }
 
 int UnbagNode::run_on_args()
@@ -157,6 +158,7 @@ void UnbagNode::run_on_files()
   ConverterOptions converter_options{"cdr","cdr"};
 
   unordered_map<string, rosidl_message_type_support_t> ts_map;
+  bool split = get_parameter("split_by_bag").as_bool();
 
   for (const auto & uri : bag_uris_)
   {
@@ -186,6 +188,17 @@ void UnbagNode::run_on_files()
         }
       }
     }
+    if (split && uri != bag_uris_.back())
+    {
+      for (const auto & pipe : pipes_)
+      {
+        pipe->on_bag_end();
+      }
+    }
+  }
+  for (const auto & pipe : pipes_)
+  {
+    pipe->on_unbag_end();
   }
 }
 void UnbagNode::unbag_callback(const shared_ptr<SerializedMessage> & data, const string & topic,

@@ -16,6 +16,7 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosbag2_cpp REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem)
+find_package(jsoncpp REQUIRED)
 
 add_library(unbag_lib src/unbag_node.cpp src/pipe.cpp src/generic_subscription.cpp src/wild_msg.cpp)
 target_include_directories(unbag_lib PUBLIC
@@ -45,10 +46,10 @@ target_include_directories(unbag2_default_pipes PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                            $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(unbag2_default_pipes rclcpp pluginlib)
-target_link_libraries(unbag2_default_pipes unbag2_pipe)
+target_link_libraries(unbag2_default_pipes unbag2_pipe ${JSONCPP_LIBRARIES})
 pluginlib_export_plugin_description_file(unbag2 default_pipes.xml)
 
-install(TARGETS unbag2 unbag2_default_pipes DESTINATION lib/${PROJECT_NAME})
+install(TARGETS unbag2 unbag2_default_pipes unbag2_pipe DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY cfg DESTINATION share/${PROJECT_NAME})

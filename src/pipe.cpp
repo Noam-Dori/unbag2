@@ -62,4 +62,12 @@ Pipe::Pipe(string name): prefix_(move(name))
 void Pipe::load_pipe_params(rclcpp::Node *)
 {
 }
+
+void Pipe::on_bag_end()
+{
+}
+
+void Pipe::on_unbag_end()
+{
+}
 }
