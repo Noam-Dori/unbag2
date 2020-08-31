@@ -1,0 +1,5 @@
+<library path="unbag2_default_pipes">
+  <class type="unbag2::GpsPipe" base_class_type="unbag2::Pipe">
+    <description>Writes GPS (NavSatFix) into a JSON file.</description>
+  </class>
+</library>

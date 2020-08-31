@@ -73,9 +73,9 @@ public:
   }
 protected:
   /**
-   * \brief
-   * \param msg (RosMsg)
-   * \param topic (const std::string &)
+   * \brief process a ROS message
+   * \param msg (RosMsg) the message to process
+   * \param topic (const std::string &) the topic from which the message came from
    */
   virtual void process(RosMsg, const std::string &)
   {

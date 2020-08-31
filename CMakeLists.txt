@@ -31,7 +31,24 @@ target_include_directories(unbag2 PUBLIC
 ament_target_dependencies(unbag2 rclcpp pluginlib)
 target_link_libraries(unbag2 unbag_lib)
 
-install(TARGETS unbag2 DESTINATION lib/${PROJECT_NAME})
+# declares an interface with some implementations
+# this is done because you cannot link a shared library to a static one.
+add_library(unbag2_pipe SHARED src/pipe.cpp)
+target_include_directories(unbag2_pipe PUBLIC
+                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                           $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(unbag2_pipe rclcpp pluginlib)
+
+# this segment of code is used to add a plugin
+add_library(unbag2_default_pipes SHARED src/pipe/gps_pipe.cpp)
+target_include_directories(unbag2_default_pipes PUBLIC
+                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                           $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(unbag2_default_pipes rclcpp pluginlib)
+target_link_libraries(unbag2_default_pipes unbag2_pipe)
+pluginlib_export_plugin_description_file(unbag2 default_pipes.xml)
+
+install(TARGETS unbag2 unbag2_default_pipes DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY cfg DESTINATION share/${PROJECT_NAME})

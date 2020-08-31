@@ -6,7 +6,6 @@
 #include <unbag2/unbag_node.hpp>
 #include <unbag2/generic_subscription.hpp>
 #include <unbag2/wild_msg.hpp>
-#include <pluginlib/class_loader.hpp>
 #include <rosbag2_cpp/reader.hpp>
 #include <rosbag2_cpp/readers/sequential_reader.hpp>
 #include <rosbag2_cpp/typesupport_helpers.hpp>
@@ -42,7 +41,7 @@ using std::vector;
 
 namespace unbag2
 {
-UnbagNode::UnbagNode() : Node("unbag")
+UnbagNode::UnbagNode() : Node("unbag"), plugin_loader_("unbag2","unbag2::Pipe")
 {
   declare_parameter<string>("mode", "post");
 }
@@ -56,7 +55,7 @@ int UnbagNode::run_on_args()
     RCLCPP_FATAL(unbag->get_logger(), "no pipe found to process data... aborting");
     return 1;
   }
-  auto mode = unbag->declare_parameter("mode", string());
+  auto mode = unbag->get_parameter("mode").as_string();
   if (mode == "post")
   {
     istringstream file_param(unbag->declare_parameter<string>("files", ""));
@@ -80,12 +79,11 @@ int UnbagNode::run_on_args()
 }
 void UnbagNode::init_plugins()
 {
-  ClassLoader<Pipe> plugin_loader("unbag2","unbag2::Pipe");
-  for (const auto & class_name : plugin_loader.getDeclaredClasses())
+  for (const auto & class_name : plugin_loader_.getDeclaredClasses())
   {
     try
     {
-      auto pipe = plugin_loader.createSharedInstance(class_name);
+      auto pipe = plugin_loader_.createSharedInstance(class_name);
       pipe->load_params(this);
       if (pipe->enabled())
       {

@@ -7,7 +7,9 @@
 #include <regex>
 #include <utility>
 
+using boost::filesystem::create_directories;
 using boost::filesystem::current_path;
+using boost::filesystem::exists;
 using boost::filesystem::is_directory;
 using boost::filesystem::path;
 using rclcpp::Node;
@@ -36,7 +38,15 @@ void Pipe::load_params(Node * node)
   target_dir = regex_replace(target_dir.string(), folder_regex, "");
   target_dir = regex_replace(target_dir.string(), parent_regex, "");
 
-  target_dir_ = is_directory(target_dir) ? target_dir : target_dir.parent_path();
+  if (!exists(target_dir))
+  {
+    target_dir_ = target_dir;
+    create_directories(target_dir_);
+  }
+  else
+  {
+    target_dir_ = is_directory(target_dir) ? target_dir : target_dir.parent_path();
+  }
 
   load_pipe_params(node);
 }

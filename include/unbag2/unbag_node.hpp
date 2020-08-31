@@ -5,6 +5,7 @@
 
 #include <unbag2/generic_subscription.hpp>
 #include <unbag2/pipe.hpp>
+#include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rosbag2_cpp/converter.hpp>
 
@@ -33,6 +34,7 @@ private:
   void unbag_callback(const std::shared_ptr<rclcpp::SerializedMessage>& data,
                       const std::string& topic,
                       const rosidl_message_type_support_t * ts);
+  pluginlib::ClassLoader<Pipe> plugin_loader_;
   std::list<std::shared_ptr<Pipe>> pipes_;
   std::list<std::string> bag_uris_;
   std::list<GenericSubscription> subscriptions_;
