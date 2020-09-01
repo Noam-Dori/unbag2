@@ -26,8 +26,7 @@ bool Pipe::enabled() const
 void Pipe::load_params(Node * node)
 {
   enabled_ = node->declare_parameter(to_param("enabled"), true);
-  path target_dir = node->declare_parameter("target_dir", "");
-
+  path target_dir = node->get_parameter("target_dir").as_string();
   if(!target_dir.is_absolute())
   {
     target_dir = current_path() / target_dir;

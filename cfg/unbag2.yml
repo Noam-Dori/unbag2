@@ -2,11 +2,20 @@ unbag2:
   ros__parameters:
     # the mode of unbag:
     # "post": reads bag files (paths specified by "files" parameter) and parses their data into files.
+    #         In post mode, you need to specify the files to read as a parameter "files" either in this yaml file or as a launch file argument.
+    #         This is a string of a list of paths split by spaces.
+    #         - Relative paths are relative to the current working directory.
+    #         - Wildcards ("*") are allowed.
+    #         - Paths to directories will find all bag files in the directory (only 1 level)
     # "live": directly subscribes to many topics and parses them directly into files. No bags in the middle.
     mode: "post"
-    # when set to true, unbag will split all files by bag file
+    # the target path to put files in. Relative paths are relative to the current working directory.
+    target_dir: "."
+    # when set to true, unbag will split all files by bag file. only available in "post" mode
     split_by_bag: false
     gps_pipe:
+      # an optional parameter that can be used to disable a plugin.
+      enabled: true
       # when set to true, if the covariance is unknown, remove it from the JSON entry
       remove_covariance: false
       # split the bag files by the set amount of seconds, if -1, the pipe will not split by time

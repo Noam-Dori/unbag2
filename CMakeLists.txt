@@ -54,6 +54,8 @@ install(TARGETS unbag2 unbag2_default_pipes unbag2_pipe DESTINATION lib/${PROJEC
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY cfg DESTINATION share/${PROJECT_NAME})
 
+install(PROGRAMS unbag DESTINATION lib/${PROJECT_NAME})
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()

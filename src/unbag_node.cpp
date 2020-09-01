@@ -43,8 +43,10 @@ namespace unbag2
 {
 UnbagNode::UnbagNode() : Node("unbag"), plugin_loader_("unbag2","unbag2::Pipe")
 {
-  declare_parameter<string>("mode", "post");
-  declare_parameter<bool>("split_by_bag",false);
+  declare_parameter("mode", "post");
+  declare_parameter("split_by_bag",false);
+  declare_parameter("target_dir", ".");
+  declare_parameter("files", "");
 }
 
 int UnbagNode::run_on_args()
@@ -59,7 +61,7 @@ int UnbagNode::run_on_args()
   auto mode = unbag->get_parameter("mode").as_string();
   if (mode == "post")
   {
-    istringstream file_param(unbag->declare_parameter<string>("files", ""));
+    istringstream file_param(unbag->get_parameter("files").as_string());
     for (const auto & path : vector<string>{istream_iterator<string>{file_param}, istream_iterator<string>{}})
     {
       unbag->add_source(path);

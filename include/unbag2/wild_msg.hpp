@@ -45,7 +45,9 @@ public:
   template<class Msg> Msg deserialize() const
   {
     Msg ret;
-    rmw_deserialize(data_.get(), &type_, &ret);
+    if(rmw_deserialize(data_.get(), &type_, &ret))
+    { // fairly useless bit of code used to suppress a warning.
+    }
     return ret;
   }
 private:
