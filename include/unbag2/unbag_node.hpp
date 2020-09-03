@@ -37,6 +37,7 @@ private:
   void unbag_callback(const std::shared_ptr<rclcpp::SerializedMessage>& data,
                       const std::string& topic,
                       const rosidl_message_type_support_t * ts);
+  bool excluded(const std::string & topic);
   pluginlib::ClassLoader<Pipe> plugin_loader_;
   std::list<std::shared_ptr<Pipe>> pipes_;
   std::list<std::string> bag_uris_;

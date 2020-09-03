@@ -1,2 +1,22 @@
-#!/usr/bin/env sh
-ros2 launch unbag2 files:="\"$*\""
+#!/usr/bin/env bash
+sources=
+config=
+for path in "$@" ; do
+  if [[ -e "$path" ]] ; then
+    if [[ "$path" == *.yml || "$path" == *.yaml ]] ; then
+      if [[ -n "$config" ]] ; then
+        echo -e '\033[0;31m[FATAL] [unbag2] multiple yaml files provided, please only give one file.\033[0m'
+        exit 1
+      fi
+      config="$path"
+    else
+      if [[ -z $sources ]] ; then
+        sources="$path"
+      else
+      sources="$sources $path"
+      fi
+    fi
+  fi
+done
+ros2 launch unbag2 unbag2.py "files:=\"$sources\" yaml:=\"$config\""
+exit 0

@@ -13,6 +13,13 @@ unbag2:
     target_dir: "."
     # when set to true, unbag will split all files by bag file. only available in "post" mode
     split_by_bag: false
+    # uncomment ONE OF the following to enable explicit filtering of topics:
+    # include explicitly chooses the topics that are un-bagged
+    # exclude filters out the specified topics and un-bags the rest.
+    # leaving both commented will simply unbag all topics.
+    # having both UN-commented will result in a fatal error.
+#    include:
+#    exclude:
     gps_pipe:
       # an optional parameter that can be used to disable a plugin.
       enabled: true

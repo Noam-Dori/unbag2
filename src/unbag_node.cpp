@@ -30,6 +30,7 @@ using rosbag2_cpp::readers::SequentialReader;
 using rosbag2_cpp::get_typesupport_handle;
 using rosbag2_cpp::get_typesupport_library;
 using std::chrono_literals::operator""ms;
+using std::find;
 using std::istream_iterator;
 using std::istringstream;
 using std::regex;
@@ -47,11 +48,19 @@ UnbagNode::UnbagNode() : Node("unbag"), plugin_loader_("unbag2","unbag2::Pipe")
   declare_parameter("split_by_bag",false);
   declare_parameter("target_dir", ".");
   declare_parameter("files", "");
+  declare_parameter("exclude", "");
+  declare_parameter("include", "");
 }
 
 int UnbagNode::run_on_args()
 {
   auto unbag = std::make_shared<UnbagNode>();
+  if (!unbag->get_parameter("include").as_string().empty() &&
+  !unbag->get_parameter("exclude").as_string().empty())
+  {
+    RCLCPP_FATAL(unbag->get_logger(), "exclude and include modes were both toggled on... aborting");
+    return 1;
+  }
   unbag->init_plugins();
   if (unbag->pipes_.empty())
   {
@@ -104,6 +113,10 @@ void UnbagNode::init_subscribers()
   sleep_for(100ms); // gives the node time to register all the available topics
   for(const auto & topic : get_topic_names_and_types())
   {
+    if (excluded(topic.first))
+    {
+      continue;
+    }
     auto ts = get_typesupport_handle(topic.second[0], "rosidl_typesupport_cpp",
                                      get_typesupport_library(topic.second[0], "rosidl_typesupport_cpp"));
     subscriptions_.emplace_back(get_node_base_interface().get(), *ts, topic.first, [this, &topic, &ts](auto && msg)
@@ -181,6 +194,10 @@ void UnbagNode::run_on_files()
 
     for (auto serialized = reader.read_next(); reader.has_next() ; serialized = reader.read_next())
     {
+      if (excluded(serialized->topic_name))
+      {
+        continue;
+      }
       WildMsg msg(serialized->serialized_data, serialized->topic_name, ts_map[serialized->topic_name]);
       for (const auto & pipe : pipes_)
       {
@@ -213,6 +230,23 @@ void UnbagNode::unbag_callback(const shared_ptr<SerializedMessage> & data, const
     {
       pipe->process(msg);
     }
+  }
+}
+
+bool UnbagNode::excluded(const string & topic)
+{
+  auto param = get_parameter("include").as_string();
+  if (!param.empty())
+  {
+    istringstream stream(param);
+    auto topics = vector<string>{istream_iterator<string>{stream}, istream_iterator<string>{}};
+    return find(topics.begin(), topics.end(), topic) == topics.end();
+  }
+  else
+  {
+    istringstream stream(get_parameter("exclude").as_string());
+    auto topics = vector<string>{istream_iterator<string>{stream}, istream_iterator<string>{}};
+    return find(topics.begin(), topics.end(), topic) != topics.end();
   }
 }
 }
