@@ -41,7 +41,7 @@ target_include_directories(unbag2_pipe PUBLIC
 ament_target_dependencies(unbag2_pipe rclcpp pluginlib)
 
 # this segment of code is used to add a plugin
-add_library(unbag2_default_pipes SHARED src/pipe/gps_pipe.cpp)
+add_library(unbag2_default_pipes SHARED src/pipe/gps_pipe.cpp src/pipe/odom_pipe.cpp src/pipe/imu_pipe.cpp)
 target_include_directories(unbag2_default_pipes PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                            $<INSTALL_INTERFACE:include>)

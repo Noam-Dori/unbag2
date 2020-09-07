@@ -3,10 +3,9 @@
 // Copyright (c) 2020 Perfetto Modular Laboratory. All rights reserved.
 //
 
-#include "../pipe.hpp"
+#include "json_pipe.hpp"
 #include <pluginlib/class_list_macros.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
-#include <jsoncpp/json/json.h>
 
 #ifndef UNBAG2_GPS_PIPE_HPP
 #define UNBAG2_GPS_PIPE_HPP
@@ -16,7 +15,7 @@ namespace unbag2
 /**
  * \brief a pipe specializing in converting GPS messages to JSON files.
  */
-class GpsPipe : public PipeBase<sensor_msgs::msg::NavSatFix>
+class GpsPipe : public JsonPipe<sensor_msgs::msg::NavSatFix>
 {
 public:
   /**
@@ -24,23 +23,12 @@ public:
    */
   GpsPipe();
 
-  void load_pipe_params(rclcpp::Node * node) override;
+protected:
+  void load_json_params(rclcpp::Node * node) override;
 
-  void process(sensor_msgs::msg::NavSatFix msg, const std::string & topic) override;
-
-  void on_bag_end() override;
-
-  void on_unbag_end() override;
+  Json::Value to_json(sensor_msgs::msg::NavSatFix msg) override;
 private:
   bool covariance_ = false;
-  double split_by_time_ = -1;
-  std::map<std::string, Json::Value> out_;
-  std::map<std::string, int> folders_;
-  Json::FastWriter writer_;
-  std::string file_name_;
-  rclcpp::Time last_split_{0};
-  void write_file(const boost::filesystem::path & path, const Json::Value & json_to_write, const std::string& topic,
-                  const std::string& seq);
 };
 }
 

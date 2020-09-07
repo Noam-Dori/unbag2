@@ -77,19 +77,29 @@ public:
     return ns + "/" + type;
   }
 protected:
-  virtual void load_pipe_params(rclcpp::Node * node);
+  /**
+   * \brief load parameters this pipe uses for configuration
+   * \param node (rclcpp::Node *) the node parameters are read from
+   */
+  virtual void load_pipe_params(rclcpp::Node *);
 
   std::string to_param(const std::string& name);
+
+  rclcpp::Logger & get_logger();
+
+  std::string get_name();
 
   boost::filesystem::path target_dir_;
 private:
   bool enabled_ = true;
   std::string prefix_;
+  std::shared_ptr<rclcpp::Logger> logger_;
 };
 
 /**
  * \brief a useful interface for a pipe that processes only one type of messages.
  * \tparam RosMsg the class of message this pipe processes
+ * \see JsonPipe for JSON file oriented message pipe.
  */
 template <class RosMsg>
 class PipeBase : public Pipe // pipe is not an interface so no virtual

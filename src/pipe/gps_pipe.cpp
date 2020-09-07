@@ -4,50 +4,26 @@
 //
 
 #include <unbag2/pipe/gps_pipe.hpp>
-#include <regex>
 
 using Json::Value;
-using boost::filesystem::path;
-using boost::filesystem::ofstream;
-using rclcpp::Duration;
 using rclcpp::Node;
-using rclcpp::Time;
 using sensor_msgs::msg::NavSatFix;
-using std::regex;
-using std::regex_replace;
 using std::string;
-using std::to_string;
 
 namespace unbag2
 {
 
-GpsPipe::GpsPipe() : PipeBase<NavSatFix>("gps_pipe")
+GpsPipe::GpsPipe() : JsonPipe<NavSatFix>("gps_pipe")
 {
 }
 
-void GpsPipe::load_pipe_params(Node * node)
+void GpsPipe::load_json_params(Node * node)
 {
   covariance_ = !node->declare_parameter<bool>(to_param("remove_covariance"), false);
-  split_by_time_ = node->declare_parameter<double>(to_param("time"), -1);
-  file_name_ = node->declare_parameter<string>(to_param("file_name"), "{topic}_{seq}.json");
 }
 
-void GpsPipe::process(NavSatFix msg, const string & topic)
+Value GpsPipe::to_json(NavSatFix msg)
 {
-  Time time = msg.header.stamp;
-  if (last_split_ == Time(0))
-  {
-    last_split_ = time;
-  }
-  else if (split_by_time_ > 0 && time >= last_split_ + Duration(split_by_time_))
-  {
-    last_split_ += Duration(split_by_time_);
-    on_bag_end();
-  }
-  if (out_.find(topic) == out_.end())
-  {
-    out_[topic] = Value();
-  }
   Value entry;
   entry["latitude"] = msg.latitude;
   entry["longitude"] = msg.longitude;
@@ -62,57 +38,6 @@ void GpsPipe::process(NavSatFix msg, const string & topic)
       covariance.append(item);
     }
   }
-  out_[topic].append(entry);
-}
-
-void GpsPipe::on_bag_end()
-{
-  for (auto & entry : out_)
-  {
-    auto topic = regex_replace(entry.first, regex("/"), "_").substr(1);
-    auto itr = folders_.find(entry.first);
-    string seq;
-    if  (itr != folders_.end())
-    {
-      seq = to_string(itr->second++);
-    }
-    else
-    {
-      seq = "0";
-      folders_[entry.first] = 1;
-    }
-    write_file(target_dir_ / topic, entry.second, topic, seq);
-  }
-  out_.clear();
-}
-
-void GpsPipe::on_unbag_end()
-{
-  for (auto & entry : out_)
-  {
-    auto topic = regex_replace(entry.first, regex("/"), "_").substr(1);
-    path p;
-    auto itr = folders_.find(entry.first);
-    string seq;
-    if  (itr != folders_.end())
-    {
-      p = target_dir_ / topic;
-      seq = to_string(itr->second);
-    }
-    else
-    {
-      p = target_dir_;
-    }
-    write_file(p, entry.second, topic, seq);
-  }
-}
-
-void GpsPipe::write_file(const path & path, const Value & json_to_write, const string& topic, const string& seq)
-{
-  string file_name = regex_replace(
-      regex_replace(file_name_, regex("\\{topic\\}"), topic), regex("\\{seq\\}"), seq);
-  ofstream file(path / file_name);
-  file << writer_.write(json_to_write);
-  file.close();
+  return entry;
 }
 }

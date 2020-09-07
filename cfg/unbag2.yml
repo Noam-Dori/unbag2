@@ -31,3 +31,17 @@ unbag2:
       # {topic}: the fully qualified input topic, with slashes replaced by underscores.
       # {seq} the sequence identifier of the file, if there are splits, this number represents this file's order in the list.
       file_name: "{topic}_{seq}.json"
+    # each pipe has its own configuration tab in the config, according to its name.
+    # all pipes have "enabled"
+    # JSON pipes have "time", "file_name"
+    # and covariance oriented pipes also have "remove_covariance"
+    odom_pipe:
+      enabled: true
+      remove_covariance: false
+      time: -1
+      file_name: "{topic}_{seq}.json"
+    imu_pipe:
+      enabled: true
+      remove_covariance: false
+      time: -1
+      file_name: "{topic}_{seq}.json"

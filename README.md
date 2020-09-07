@@ -25,12 +25,92 @@ Additional is done from `cfg/unbag2.yml`. See it for extra documentation about c
 ## Extension
 You can add more processors, or "pipes" to unbag via plugins.
 To add a plugin:
-1. Declare a class that implements `unbag2::Pipe` or `unbag2::PipeBase<class>`
+1. Declare a class that extends `unbag2::Pipe`, `unbag2::PipeBase<class>`, or `unbag2::JsonPipe<class>`
    and add the plugin macro to it.
-   See `include/unbag2/gps_pipe.hpp` as an example
+   For example:
+```cpp
+#include <unbag2/pipe.hpp>
+#include <pluginlib/class_list_macros.hpp>
+#include <std_msgs/msg/string.hpp>
+
+#ifndef MY_PIPE_STRING_PIPE_HPP
+#define MY_PIPE_STRING_PIPE_HPP
+
+namespace my_pipe
+{
+/**
+ * \brief a pipe specializing in logging incoming strings.
+ */
+class StringPipe : public PipeBase<std_msgs::msg::String>
+{
+public:
+  /**
+   * \brief construct a new String pipe. figures.
+   */
+  GpsPipe();
+
+  void load_pipe_params(rclcpp::Node * node) override;
+
+  void process(std_msgs::msg::String msg, const std::string & topic) override;
+
+  void on_bag_end() override;
+
+  void on_unbag_end() override;
+private:
+  bool print_warning_ = false;
+};
+}
+
+PLUGINLIB_EXPORT_CLASS(unbag2::StringPipe, unbag2::Pipe) // NOLINT(cert-err58-cpp)
+
+#endif //MY_PIPE_STRING_PIPE_HPP
+```
 2. Implement `process`, `on_bag_end`, `on_unbag_end`, and optionally `load_pipe_params` or `can_process`.
-   If you implemented PipeBase, your life will be easier.
-   See `src/pipe/gps_pipe.cpp` as an example for implementation. See `include/unbag2/pipe.hpp` for API documentation.
+   If you implemented PipeBase, your life will be easier. See `include/unbag2/pipe.hpp` for API documentation.
+   Example:
+```cpp
+#include <my_pipe/string_pipe.hpp>
+
+using rclcpp::Node;
+using std_msgs::msg::String;
+using std::string;
+
+namespace my_pipe
+{
+
+StringPipe::StringPipe() : PipeBase<String>("string_pipe")
+{
+}
+
+void StringPipe::load_pipe_params(Node * node)
+{
+  print_warning_ = !node->declare_parameter<bool>(to_param("print_warning"), false);
+}
+
+void StringPipe::process(String msg, const string & topic)
+{
+  auto message = "got string [%s] from topic [%s]";
+  if(print_warning_)
+  {
+    RCLCPP_WARN(get_logger(), message, msg.data.c_str(), topic.c_str());
+  }
+  else
+  {
+    RCLCPP_INFO(get_logger(), message, msg.data.c_str(), topic.c_str());
+  }
+}
+
+void StringPipe::on_bag_end()
+{
+  RCLCPP_INFO(get_logger(), "finished processing a bag file");
+}
+
+void StringPipe::on_unbag_end()
+{
+  RCLCPP_INFO(get_logger(), "finished processing all files");
+}
+}
+```
 3. create a plugin.xml file that declares a new library and describes your new class(es):
 ```xml
 <library path="<LIBRARY NAME>">

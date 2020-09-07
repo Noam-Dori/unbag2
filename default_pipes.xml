@@ -2,4 +2,10 @@
   <class type="unbag2::GpsPipe" base_class_type="unbag2::Pipe">
     <description>Writes GPS (NavSatFix) into a JSON file.</description>
   </class>
+  <class type="unbag2::OdomPipe" base_class_type="unbag2::Pipe">
+    <description>Writes Odometry into a JSON file.</description>
+  </class>
+  <class type="unbag2::ImuPipe" base_class_type="unbag2::Pipe">
+    <description>Writes IMU into a JSON file.</description>
+  </class>
 </library>

@@ -12,7 +12,9 @@ using boost::filesystem::current_path;
 using boost::filesystem::exists;
 using boost::filesystem::is_directory;
 using boost::filesystem::path;
+using rclcpp::Logger;
 using rclcpp::Node;
+using std::make_shared;
 using std::move;
 using std::regex;
 using std::string;
@@ -26,6 +28,7 @@ bool Pipe::enabled() const
 void Pipe::load_params(Node * node)
 {
   enabled_ = node->declare_parameter(to_param("enabled"), true);
+  logger_ = make_shared<Logger>(node->get_logger());
   path target_dir = node->get_parameter("target_dir").as_string();
   if(!target_dir.is_absolute())
   {
@@ -68,5 +71,15 @@ void Pipe::on_bag_end()
 
 void Pipe::on_unbag_end()
 {
+}
+
+Logger & Pipe::get_logger()
+{
+  return *logger_;
+}
+
+string Pipe::get_name()
+{
+  return prefix_;
 }
 }
