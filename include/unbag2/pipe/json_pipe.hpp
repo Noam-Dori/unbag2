@@ -93,6 +93,7 @@ protected:
    */
   virtual Json::Value to_json(RosMsg)
   {
+    return Json::Value();
   }
 
   void load_pipe_params(rclcpp::Node * node) override

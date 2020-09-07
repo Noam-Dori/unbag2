@@ -16,7 +16,8 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosbag2_cpp REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem)
-find_package(jsoncpp REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
 
 add_library(unbag_lib src/unbag_node.cpp src/pipe.cpp src/generic_subscription.cpp src/wild_msg.cpp)
 target_include_directories(unbag_lib PUBLIC
