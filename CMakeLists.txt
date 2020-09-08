@@ -25,6 +25,7 @@ target_include_directories(unbag_lib PUBLIC
                            $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(unbag_lib rclcpp pluginlib rosbag2_cpp)
 target_link_libraries(unbag_lib ${Boost_LIBRARIES})
+ament_export_include_directories(include)
 
 add_executable(unbag2 src/unbag_main.cpp)
 target_include_directories(unbag2 PUBLIC
@@ -42,7 +43,10 @@ ament_target_dependencies(unbag2_default_pipes rclcpp pluginlib)
 target_link_libraries(unbag2_default_pipes ${JSONCPP_LIBRARIES})
 pluginlib_export_plugin_description_file(unbag2 default_pipes.xml)
 
-install(TARGETS unbag2 unbag_lib unbag2_default_pipes DESTINATION lib/${PROJECT_NAME})
+install(TARGETS unbag2 unbag_lib unbag2_default_pipes
+        LIBRARY DESTINATION lib/${PROJECT_NAME}
+        RUNTIME DESTINATION bin/${PROJECT_NAME}
+        INCLUDES DESTINATION include)
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY cfg DESTINATION share/${PROJECT_NAME})
