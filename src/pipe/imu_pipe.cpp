@@ -4,6 +4,7 @@
 //
 
 #include <unbag2/pipe/imu_pipe.hpp>
+#include <unbag2/pipe/json_utils.hpp>
 
 using Json::Value;
 using rclcpp::Node;
@@ -27,13 +28,13 @@ Value ImuPipe::to_json(Imu msg)
   entry["header"]["frame_id"] = msg.header.frame_id;
   entry["header"]["stamp"] = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9;
 
-  entry["orientation"] = to_json(msg.orientation);
-  entry["linear_acceleration"] = to_json(msg.linear_acceleration);
-  entry["angular_velocity"] = to_json(msg.angular_velocity);
+  entry["orientation"] = JsonUtils::to_json(msg.orientation);
+  entry["linear_acceleration"] = JsonUtils::to_json(msg.linear_acceleration);
+  entry["angular_velocity"] = JsonUtils::to_json(msg.angular_velocity);
 
-  add_covariance(entry["orientation_covariance"], msg.orientation_covariance);
-  add_covariance(entry["linear_acceleration_covariance"], msg.linear_acceleration_covariance);
-  add_covariance(entry["angular_velocity_covariance"], msg.angular_velocity_covariance);
+  JsonUtils::add_covariance(entry["orientation_covariance"], msg.orientation_covariance, covariance_);
+  JsonUtils::add_covariance(entry["linear_acceleration_covariance"], msg.linear_acceleration_covariance, covariance_);
+  JsonUtils::add_covariance(entry["angular_velocity_covariance"], msg.angular_velocity_covariance, covariance_);
   return entry;
 }
 }

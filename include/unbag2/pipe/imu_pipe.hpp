@@ -30,39 +30,6 @@ protected:
   Json::Value to_json(sensor_msgs::msg::Imu msg) override;
 private:
   bool covariance_ = false;
-
-  template <class T>
-  void try_w(Json::Value & out, const T & potential_w, decltype(&T::w))
-  {
-    out["w"] = potential_w.w;
-  }
-  template<class T>
-  void try_w(Json::Value &, const T &, ...)
-  {
-  }
-
-  template<class T>
-  Json::Value to_json(T point_or_quaternion)
-  {
-    Json::Value ret;
-    ret["x"] = point_or_quaternion.x;
-    ret["y"] = point_or_quaternion.y;
-    ret["z"] = point_or_quaternion.z;
-    try_w(ret, point_or_quaternion, nullptr);
-    return ret;
-  }
-
-  template<size_t size>
-  void add_covariance(Json::Value & out, std::array<double, size> covariance)
-  {
-    if (covariance_ || std::any_of(covariance.begin(), covariance.end(), [](double d){return d != 0;}))
-    {
-      for (auto item : covariance)
-      {
-        out.append(item);
-      }
-    }
-  }
 };
 }
 

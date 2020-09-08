@@ -29,7 +29,7 @@ To add a plugin:
    and add the plugin macro to it.
    For example:
 ```cpp
-#include <unbag2/pipe.hpp>
+#include <unbag2/pipe/pipe_base.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <std_msgs/msg/string.hpp>
 
@@ -66,7 +66,7 @@ PLUGINLIB_EXPORT_CLASS(unbag2::StringPipe, unbag2::Pipe) // NOLINT(cert-err58-cp
 #endif //MY_PIPE_STRING_PIPE_HPP
 ```
 2. Implement `process`, `on_bag_end`, `on_unbag_end`, and optionally `load_pipe_params` or `can_process`.
-   If you implemented PipeBase, your life will be easier. See `include/unbag2/pipe.hpp` for API documentation.
+   See `include/unbag2/pipe.hpp`, `include/unabg2/pipe/pipe_base.hpp` and `include/unabg2/pipe/json_pipe.hpp` for API documentation.
    Example:
 ```cpp
 #include <my_pipe/string_pipe.hpp>

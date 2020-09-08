@@ -4,11 +4,11 @@
 //
 
 #include <unbag2/pipe/gps_pipe.hpp>
+#include <unbag2/pipe/json_utils.hpp>
 
 using Json::Value;
 using rclcpp::Node;
 using sensor_msgs::msg::NavSatFix;
-using std::string;
 
 namespace unbag2
 {
@@ -30,14 +30,8 @@ Value GpsPipe::to_json(NavSatFix msg)
   entry["altitude"] = msg.altitude;
   entry["header"]["frame_id"] = msg.header.frame_id;
   entry["header"]["stamp"] = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9;
-  if (covariance_ || msg.position_covariance_type != NavSatFix::COVARIANCE_TYPE_UNKNOWN)
-  {
-    auto & covariance = entry["position_covariance"];
-    for (auto item : msg.position_covariance)
-    {
-      covariance.append(item);
-    }
-  }
+  JsonUtils::add_covariance(entry["position_covariance"], msg.position_covariance,
+                            covariance_ || msg.position_covariance_type != NavSatFix::COVARIANCE_TYPE_UNKNOWN);
   return entry;
 }
 }
