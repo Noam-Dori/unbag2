@@ -128,7 +128,6 @@ target_include_directories(<LIBRARY NAME> PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                            $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(<LIBRARY NAME> rclcpp pluginlib)
-target_link_libraries(<LIBRARY NAME> unbag2_pipe)
 pluginlib_export_plugin_description_file(<PKG> default_pipes.xml)
 ```
 These will declare and export your plugin so unbag2 knows about them.

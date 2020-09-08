@@ -31,15 +31,11 @@ protected:
 private:
   bool covariance_ = false;
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
   template <class T>
   void try_w(Json::Value & out, const T & potential_w, decltype(&T::w))
   {
     out["w"] = potential_w.w;
   }
-#pragma clang diagnostic pop
   template<class T>
   void try_w(Json::Value &, const T &, ...)
   {

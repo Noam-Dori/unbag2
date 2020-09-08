@@ -6,6 +6,7 @@
 #include "wild_msg.hpp"
 #include <rclcpp/rclcpp.hpp>
 #include <boost/filesystem.hpp>
+#include <regex>
 
 #ifndef UNBAG2_PIPE_HPP
 #define UNBAG2_PIPE_HPP
@@ -20,19 +21,20 @@ class Pipe
 public:
   /**
    * \brief constructs a new pipe
-   * \param name the pipe's name.
+   * \param name the pipe's name, used in the yaml file.
    * \note when implementing, you must set the name IN THE CONSTRUCTOR.
    */
-  explicit Pipe(std::string name);
-  /**
-   * \brief uses the node to load pipe specific parameters.
-   * \param node the reference node to pick up parameters.
-   */
-  void load_params(rclcpp::Node * node);
+  explicit Pipe(std::string name) : prefix_(move(name))
+  {
+  }
+
   /**
    * \return true if the pipe is enabled meaning it should be running, false if the user toggled it off.
    */
-  bool enabled() const;
+  bool enabled() const
+  {
+    return enabled_;
+  }
 
   /**
    * \brief whether or not msg can be processed by this pipe
@@ -40,6 +42,38 @@ public:
    * \return true if msg can be processed, false otherwise.
    */
   virtual bool can_process(const WildMsg & msg) = 0;
+
+  /**
+   * \brief uses the node to load pipe specific parameters.
+   * \param node the reference node to pick up parameters.
+   */
+  void load_params(rclcpp::Node * node)
+  {
+    enabled_ = node->declare_parameter(to_param("enabled"), true);
+    logger_ = std::make_shared<rclcpp::Logger>(node->get_logger());
+    boost::filesystem::path target_dir = node->get_parameter("target_dir").as_string();
+    if(!target_dir.is_absolute())
+    {
+      target_dir = boost::filesystem::current_path() / target_dir;
+    }
+
+    // next we need to take care of ../ and ./ in the path
+    std::regex folder_regex("/\\.(?=/|$)"), parent_regex("/[^/]+/\\.\\.(?=/|$)");
+    target_dir = regex_replace(target_dir.string(), folder_regex, "");
+    target_dir = regex_replace(target_dir.string(), parent_regex, "");
+
+    if (!exists(target_dir))
+    {
+      target_dir_ = target_dir;
+      create_directories(target_dir_);
+    }
+    else
+    {
+      target_dir_ = is_directory(target_dir) ? target_dir : target_dir.parent_path();
+    }
+
+    load_pipe_params(node);
+  }
 
   /**
    * \brief process the wild message
@@ -51,12 +85,16 @@ public:
    * \brief a signal given to the pipe when a bag finished processing,
    *        and the user indicated they want to split by bag-file. Only happens in "post" mode.
    */
-  virtual void on_bag_end();
+  virtual void on_bag_end()
+  {
+  }
 
   /**
    * \brief A signal given to the pipe when unbag finished processing all bag files. Only happens in "post" mode.
    */
-  virtual void on_unbag_end();
+  virtual void on_unbag_end()
+  {
+  }
 
   /**
    * \brief A utility that gets the message type of the class.
@@ -77,61 +115,46 @@ public:
     return ns + "/" + type;
   }
 protected:
+
+  /**
+   * \return gets the target logger for the pipe. This is just the standard unbag logger.
+   */
+  rclcpp::Logger & get_logger() const
+  {
+    return *logger_;
+  }
+
+  /**
+   * \return the name assigned to this pipe.
+   */
+  std::string get_name() const
+  {
+    return prefix_;
+  }
+
+  /**
+   * \brief allows parameter fetching from the yaml tab assigned to the pipe.
+   * \param param the unqualified parameter name
+   * \return the fully qualified parameter name to query in the config.
+   */
+  std::string to_param(const std::string& param) const
+  {
+    return prefix_ + "." + param;
+  }
+
   /**
    * \brief load parameters this pipe uses for configuration
    * \param node (rclcpp::Node *) the node parameters are read from
    */
-  virtual void load_pipe_params(rclcpp::Node *);
-
-  std::string to_param(const std::string& name);
-
-  rclcpp::Logger & get_logger();
-
-  std::string get_name();
+  virtual void load_pipe_params(rclcpp::Node *)
+  {
+  }
 
   boost::filesystem::path target_dir_;
 private:
   bool enabled_ = true;
-  std::string prefix_;
   std::shared_ptr<rclcpp::Logger> logger_;
-};
-
-/**
- * \brief a useful interface for a pipe that processes only one type of messages.
- * \tparam RosMsg the class of message this pipe processes
- * \see JsonPipe for JSON file oriented message pipe.
- */
-template <class RosMsg>
-class PipeBase : public Pipe // pipe is not an interface so no virtual
-{
-public:
-  /**
-   * \brief constructs a new pipe
-   * \param name the pipe's name.
-   * \note when implementing, you must set the name IN THE CONSTRUCTOR.
-   */
-  explicit PipeBase(const std::string& name) : Pipe(name)
-  {
-  }
-
-  bool can_process(const WildMsg & msg) override
-  {
-    return msg.type() == get_msg_type<RosMsg>();
-  }
-
-  void process(const WildMsg & msg) override
-  {
-    process(msg.deserialize<RosMsg>(), msg.topic());
-  }
-protected:
-  /**
-   * \brief process a ROS message
-   * \param msg (RosMsg) the message to process
-   * \param topic (const std::string &) the topic from which the message came from
-   */
-  virtual void process(RosMsg, const std::string &)
-  {
-  }
+  std::string prefix_;
 };
 }
 

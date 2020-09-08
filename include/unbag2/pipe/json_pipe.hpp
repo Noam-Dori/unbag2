@@ -129,10 +129,7 @@ private:
     file.close();
   }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-  template <class T> void try_split(RosMsg msg, decltype(T::header))
+  template <class T> void try_split(RosMsg msg, decltype(&T::header))
   {
     rclcpp::Time time = msg.header.stamp;
     if (last_split_ == rclcpp::Time(0))
@@ -145,7 +142,6 @@ private:
       on_bag_end();
     }
   }
-#pragma clang diagnostic pop
   template <class> void try_split(RosMsg, ...)
   {
     if (split_by_time_ > 0)

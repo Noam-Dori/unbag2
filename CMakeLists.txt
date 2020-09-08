@@ -19,7 +19,7 @@ find_package(Boost REQUIRED COMPONENTS filesystem)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
 
-add_library(unbag_lib src/unbag_node.cpp src/pipe.cpp src/generic_subscription.cpp src/wild_msg.cpp)
+add_library(unbag_lib src/unbag_node.cpp src/generic_subscription.cpp src/wild_msg.cpp)
 target_include_directories(unbag_lib PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                            $<INSTALL_INTERFACE:include>)
@@ -33,24 +33,16 @@ target_include_directories(unbag2 PUBLIC
 ament_target_dependencies(unbag2 rclcpp pluginlib)
 target_link_libraries(unbag2 unbag_lib)
 
-# declares an interface with some implementations
-# this is done because you cannot link a shared library to a static one.
-add_library(unbag2_pipe SHARED src/pipe.cpp)
-target_include_directories(unbag2_pipe PUBLIC
-                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                           $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(unbag2_pipe rclcpp pluginlib)
-
 # this segment of code is used to add a plugin
 add_library(unbag2_default_pipes SHARED src/pipe/gps_pipe.cpp src/pipe/odom_pipe.cpp src/pipe/imu_pipe.cpp)
 target_include_directories(unbag2_default_pipes PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                            $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(unbag2_default_pipes rclcpp pluginlib)
-target_link_libraries(unbag2_default_pipes unbag2_pipe ${JSONCPP_LIBRARIES})
+target_link_libraries(unbag2_default_pipes ${JSONCPP_LIBRARIES})
 pluginlib_export_plugin_description_file(unbag2 default_pipes.xml)
 
-install(TARGETS unbag2 unbag2_default_pipes unbag2_pipe DESTINATION lib/${PROJECT_NAME})
+install(TARGETS unbag2 unbag_lib unbag2_default_pipes DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY cfg DESTINATION share/${PROJECT_NAME})
