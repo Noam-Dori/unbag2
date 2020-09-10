@@ -66,7 +66,7 @@ public:
     out_.clear();
   }
 
-  void on_unbag_end() override
+  void on_job_end() override
   {
     for (auto & entry : out_)
     {

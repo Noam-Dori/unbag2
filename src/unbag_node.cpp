@@ -99,7 +99,7 @@ void UnbagNode::init_plugins()
       pipe->load_params(this);
       if (pipe->enabled())
       {
-        pipes_.push_back(pipe);
+        pipes_.insert(pipe);
       }
     }
     catch (const PluginlibException& e)
@@ -217,7 +217,7 @@ void UnbagNode::run_on_files()
   }
   for (const auto & pipe : pipes_)
   {
-    pipe->on_unbag_end();
+    pipe->on_job_end();
   }
 }
 void UnbagNode::unbag_callback(const shared_ptr<SerializedMessage> & data, const string & topic,

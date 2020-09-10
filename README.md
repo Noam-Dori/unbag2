@@ -55,7 +55,7 @@ public:
 
   void on_bag_end() override;
 
-  void on_unbag_end() override;
+  void on_job_end() override;
 private:
   bool print_warning_ = false;
 };
@@ -65,7 +65,7 @@ PLUGINLIB_EXPORT_CLASS(unbag2::StringPipe, unbag2::Pipe) // NOLINT(cert-err58-cp
 
 #endif //MY_PIPE_STRING_PIPE_HPP
 ```
-2. Implement `process`, `on_bag_end`, `on_unbag_end`, and optionally `load_pipe_params` or `can_process`.
+2. Implement `process`, `on_bag_end`, `on_job_end`, and optionally `load_pipe_params` or `can_process`.
    See `include/unbag2/pipe.hpp`, `include/unabg2/pipe/pipe_base.hpp` and `include/unabg2/pipe/json_pipe.hpp` for API documentation.
    Example:
 ```cpp
@@ -105,7 +105,7 @@ void StringPipe::on_bag_end()
   RCLCPP_INFO(get_logger(), "finished processing a bag file");
 }
 
-void StringPipe::on_unbag_end()
+void StringPipe::on_job_end()
 {
   RCLCPP_INFO(get_logger(), "finished processing all files");
 }

@@ -18,5 +18,9 @@ for path in "$@" ; do
     fi
   fi
 done
-ros2 launch unbag2 unbag2.py "files:=\"$sources\" yaml:=\"$config\""
+if [[ -n "$config" ]] ; then
+  ros2 launch unbag2 unbag2.py "files:=\"$sources\""
+else
+  ros2 launch unbag2 unbag2.py "files:=\"$sources\" yaml:=\"$config\""
+fi
 exit 0

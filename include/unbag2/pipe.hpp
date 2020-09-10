@@ -24,8 +24,9 @@ public:
    * \param name the pipe's name, used in the yaml file.
    * \note when implementing, you must set the name IN THE CONSTRUCTOR.
    */
-  explicit Pipe(std::string name) : prefix_(move(name))
+  explicit Pipe(std::string name, double priority = 0) : prefix_(move(name))
   {
+    priority_ = priority;
   }
 
   /**
@@ -42,6 +43,16 @@ public:
    * \return true if msg can be processed, false otherwise.
    */
   virtual bool can_process(const WildMsg & msg) = 0;
+
+  /**
+   * \brief a comparison operator used to sort sets of this stuff
+   * \param other the pipe to compare this one to
+   * \return true if this pipe should be placed before the other, false otherwise.
+   */
+  bool operator<(const Pipe & other)
+  {
+    return other.priority_ < priority_;
+  }
 
   /**
    * \brief uses the node to load pipe specific parameters.
@@ -92,7 +103,7 @@ public:
   /**
    * \brief A signal given to the pipe when unbag finished processing all bag files. Only happens in "post" mode.
    */
-  virtual void on_unbag_end()
+  virtual void on_job_end()
   {
   }
 
@@ -127,7 +138,7 @@ protected:
   /**
    * \return the name assigned to this pipe.
    */
-  std::string get_name() const
+  const std::string get_name() const
   {
     return prefix_;
   }
@@ -155,6 +166,7 @@ private:
   bool enabled_ = true;
   std::shared_ptr<rclcpp::Logger> logger_;
   std::string prefix_;
+  double priority_;
 };
 }
 
