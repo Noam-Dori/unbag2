@@ -25,4 +25,13 @@ string WildMsg::topic() const
 {
   return topic_;
 }
+bool WildMsg::processed() const
+{
+  return processed_;
+}
+
+void WildMsg::feed_pipe(bool success)
+{
+  processed_ |= success;
+}
 }

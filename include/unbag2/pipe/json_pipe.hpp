@@ -34,7 +34,7 @@ public:
     return msg.type() == get_msg_type<RosMsg>();
   }
 
-  void process(const WildMsg & wild_msg) override
+  bool process(const WildMsg & wild_msg) override
   {
     RosMsg msg = wild_msg.deserialize<RosMsg>();
     try_split<RosMsg>(msg, nullptr);
@@ -43,6 +43,7 @@ public:
       out_[wild_msg.topic()] = Json::Value();
     }
     out_[wild_msg.topic()].append(to_json(msg));
+    return true;
   }
 
   void on_bag_end() override
@@ -52,7 +53,7 @@ public:
       auto topic = regex_replace(entry.first, std::regex("/"), "_").substr(1);
       auto itr = folders_.find(entry.first);
       std::string seq;
-      if  (itr != folders_.end())
+      if (itr != folders_.end())
       {
         seq = std::to_string(itr->second++);
       }
@@ -74,7 +75,7 @@ public:
       boost::filesystem::path p;
       auto itr = folders_.find(entry.first);
       std::string seq;
-      if  (itr != folders_.end())
+      if (itr != folders_.end())
       {
         p = target_dir_ / topic;
         seq = std::to_string(itr->second);
@@ -120,7 +121,7 @@ private:
   rclcpp::Time last_split_{0};
 
   void write_file(const boost::filesystem::path & path, const Json::Value & json_to_write, const std::string & topic,
-                  const std::string& seq)
+                  const std::string & seq)
   {
     std::string file_name = regex_replace(
         regex_replace(file_name_, std::regex("\\{topic\\}"), topic), std::regex("\\{seq\\}"), seq);
@@ -129,7 +130,8 @@ private:
     file.close();
   }
 
-  template <class T> void try_split(RosMsg msg, decltype(&T::header))
+  template<class T>
+  void try_split(RosMsg msg, decltype(&T::header))
   {
     rclcpp::Time time = msg.header.stamp;
     if (last_split_ == rclcpp::Time(0))
@@ -142,7 +144,9 @@ private:
       on_bag_end();
     }
   }
-  template <class> void try_split(RosMsg, ...)
+
+  template<class>
+  void try_split(RosMsg, ...)
   {
     if (split_by_time_ > 0)
     {

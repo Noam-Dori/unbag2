@@ -28,6 +28,11 @@ public:
   WildMsg(std::shared_ptr<rcutils_uint8_array_t> data, std::string topic, rosidl_message_type_support_t type);
 
   /**
+   * \return whether or not a pipe successfully processed this message
+   */
+  bool processed() const;
+
+  /**
    * \return the human readable message type of this message
    */
   std::string type() const;
@@ -50,10 +55,17 @@ public:
     }
     return ret;
   }
+
+  /**
+   * \brief adds a pipe's process to this message.
+   * \param success the success of the pipe.
+   */
+  void feed_pipe(bool success);
 private:
   std::shared_ptr<rcutils_uint8_array_t> data_;
   std::string topic_;
   rosidl_message_type_support_t type_;
+  bool processed_ = false;
 };
 }
 

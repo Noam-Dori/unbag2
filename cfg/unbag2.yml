@@ -45,3 +45,32 @@ unbag2:
       remove_covariance: false
       time: -1.
       file_name: "{topic}_{seq}.json"
+    logger:
+      status_bar:
+        # (post) progress bar for all bags.
+        job_progress_bar: true
+        # (post) % messages complete for job.
+        job_percent_done: true
+        # (post) progress bar for messages in current bag.
+        bag_progress_bar: true
+        # (post) % messages complete in current bag.
+        bag_percent_done: true
+        # (post) how much time unbag predicts is left for completion.
+        estimated_time_left: true
+        # (post) # of bags processed.
+        bags_done: false
+      # (post,live) starter message that job is starting
+      job_start: true
+      live_updates:
+        # (post,live) if a topic was not successfully processed by any pipe, this will indicate it.
+        failed_topics: true
+        # (post) prints the URI of the bag being processed.
+        # (live) prints that unbag is in live mode.
+        bag_name: false
+      after_job:
+        # (post, live) prints that unbag was either terminated of completed.
+        job_done: false
+        # (post, live) prints the number of messages processed per topic
+        num_messages_processed: true
+        # (post, live) prints topics that failed processing at least once.
+        failed_topics: true

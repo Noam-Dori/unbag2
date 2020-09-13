@@ -34,9 +34,6 @@ private:
   void init_subscribers();
   void add_source(const std::string& input_path);
   void run_on_files();
-  void unbag_callback(const std::shared_ptr<rclcpp::SerializedMessage>& data,
-                      const std::string& topic,
-                      const rosidl_message_type_support_t * ts);
   bool excluded(const std::string & topic);
   pluginlib::ClassLoader<Pipe> plugin_loader_;
   std::set<std::shared_ptr<Pipe>> pipes_;

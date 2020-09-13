@@ -22,11 +22,15 @@ public:
   /**
    * \brief constructs a new pipe
    * \param name the pipe's name, used in the yaml file.
+   * \param priority determines the order in which plugins will be used.
+   *                 Higher numbers mean the pipe will come before pipes with lower priority.
+   * \param force_bag_split whether or not this pipe MUST know about bag splits.
    * \note when implementing, you must set the name IN THE CONSTRUCTOR.
    */
-  explicit Pipe(std::string name, double priority = 0) : prefix_(move(name))
+  explicit Pipe(std::string name, double priority = 0, bool force_bag_split = false) : prefix_(move(name))
   {
     priority_ = priority;
+    force_split_ = force_bag_split;
   }
 
   /**
@@ -35,6 +39,14 @@ public:
   bool enabled() const
   {
     return enabled_;
+  }
+
+  /**
+   * \return true if the pipe MUST know about bag splits no matter what, false otherwise.
+   */
+  bool force_split() const
+  {
+    return force_split_;
   }
 
   /**
@@ -49,7 +61,7 @@ public:
    * \param other the pipe to compare this one to
    * \return true if this pipe should be placed before the other, false otherwise.
    */
-  bool operator<(const Pipe & other)
+  bool operator<(const Pipe & other) const
   {
     return other.priority_ < priority_;
   }
@@ -90,7 +102,7 @@ public:
    * \brief process the wild message
    * \param msg a message that satisfies can_process(msg) == true
    */
-  virtual void process(const WildMsg & msg) = 0;
+  virtual bool process(const WildMsg & msg) = 0;
 
   /**
    * \brief a signal given to the pipe when a bag finished processing,
@@ -138,7 +150,7 @@ protected:
   /**
    * \return the name assigned to this pipe.
    */
-  const std::string get_name() const
+  std::string get_name() const
   {
     return prefix_;
   }
@@ -163,7 +175,7 @@ protected:
 
   boost::filesystem::path target_dir_;
 private:
-  bool enabled_ = true;
+  bool enabled_ = true, force_split_ = false;
   std::shared_ptr<rclcpp::Logger> logger_;
   std::string prefix_;
   double priority_;

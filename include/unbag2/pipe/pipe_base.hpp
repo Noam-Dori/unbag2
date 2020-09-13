@@ -33,9 +33,9 @@ public:
     return msg.type() == get_msg_type<RosMsg>();
   }
 
-  void process(const WildMsg & msg) override
+  bool process(const WildMsg & msg) override
   {
-    process(msg.deserialize<RosMsg>(), msg.topic());
+    return process(msg.deserialize<RosMsg>(), msg.topic());
   }
 protected:
   /**
@@ -43,7 +43,7 @@ protected:
    * \param msg (RosMsg) the message to process
    * \param topic (const std::string &) the topic from which the message came from
    */
-  virtual void process(RosMsg, const std::string &)
+  virtual bool process(RosMsg, const std::string &)
   {
   }
 };

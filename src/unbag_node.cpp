@@ -5,6 +5,7 @@
 
 #include <unbag2/unbag_node.hpp>
 #include <unbag2/generic_subscription.hpp>
+#include <unbag2/unbag_context.hpp>
 #include <unbag2/wild_msg.hpp>
 #include <rosbag2_cpp/reader.hpp>
 #include <rosbag2_cpp/readers/sequential_reader.hpp>
@@ -42,6 +43,11 @@ using std::vector;
 
 namespace unbag2
 {
+UnbagContext & api()
+{
+  return UnbagContext::get_instance();
+}
+
 UnbagNode::UnbagNode() : Node("unbag"), plugin_loader_("unbag2","unbag2::Pipe")
 {
   declare_parameter("mode", "post");
@@ -81,6 +87,10 @@ int UnbagNode::run_on_args()
   {
     unbag->init_subscribers();
     spin(unbag);
+    for (const auto & pipe : unbag->pipes_)
+    {
+      pipe->on_job_end();
+    }
   }
   else
   {
@@ -89,6 +99,7 @@ int UnbagNode::run_on_args()
   }
   return 0;
 }
+
 void UnbagNode::init_plugins()
 {
   for (const auto & class_name : plugin_loader_.getDeclaredClasses())
@@ -119,9 +130,14 @@ void UnbagNode::init_subscribers()
     }
     auto ts = get_typesupport_handle(topic.second[0], "rosidl_typesupport_cpp",
                                      get_typesupport_library(topic.second[0], "rosidl_typesupport_cpp"));
-    subscriptions_.emplace_back(get_node_base_interface().get(), *ts, topic.first, [this, &topic, &ts](auto && msg)
+    subscriptions_.emplace_back(get_node_base_interface().get(), *ts, topic.first,[this, &topic, &ts](auto && data)
     {
-      unbag_callback(msg, topic.first, ts);
+      api().done_message();
+      WildMsg msg(std::make_shared<rcutils_uint8_array_t>(data->release_rcl_serialized_message()), topic.first, *ts);
+      for (const auto & pipe : pipes_)
+      {
+        msg.feed_pipe(pipe->can_process(msg) && pipe->process(msg));
+      }
     });
   }
 }
@@ -166,6 +182,7 @@ void UnbagNode::add_source(const string& input_path)
     }
   }
 }
+
 void UnbagNode::run_on_files()
 {
   // bag files are apparently SQL databases using SQLite3 library.
@@ -175,11 +192,13 @@ void UnbagNode::run_on_files()
   unordered_map<string, rosidl_message_type_support_t> ts_map;
   bool split = get_parameter("split_by_bag").as_bool();
 
+  api().new_job(bag_uris_.size());
   for (const auto & uri : bag_uris_)
   {
     storage_options.uri = uri;
     Reader reader(std::make_unique<SequentialReader>());
     reader.open(storage_options, converter_options); // in the future all we will need is the URI thanks to API upgrades
+    api().new_bag(reader.get_metadata().message_count, uri);
     if (!reader.has_next())
     {
       continue;
@@ -196,40 +215,31 @@ void UnbagNode::run_on_files()
     {
       if (excluded(serialized->topic_name))
       {
+        api().skip_message();
         continue;
       }
       WildMsg msg(serialized->serialized_data, serialized->topic_name, ts_map[serialized->topic_name]);
       for (const auto & pipe : pipes_)
       {
-        if (pipe->can_process(msg))
-        {
-          pipe->process(msg);
-        }
+        api().done_message();
+        msg.feed_pipe(pipe->can_process(msg) && pipe->process(msg));
       }
     }
-    if (split && uri != bag_uris_.back())
+    if (uri != bag_uris_.back())
     {
       for (const auto & pipe : pipes_)
       {
-        pipe->on_bag_end();
+        if (split || pipe->force_split())
+        {
+          pipe->on_bag_end();
+        }
       }
     }
   }
+  api().job_done();
   for (const auto & pipe : pipes_)
   {
     pipe->on_job_end();
-  }
-}
-void UnbagNode::unbag_callback(const shared_ptr<SerializedMessage> & data, const string & topic,
-                               const rosidl_message_type_support_t * ts)
-{
-  WildMsg msg(std::make_shared<rcutils_uint8_array_t>(data->release_rcl_serialized_message()), topic, *ts);
-  for (const auto & pipe : pipes_)
-  {
-    if (pipe->can_process(msg))
-    {
-      pipe->process(msg);
-    }
   }
 }
 

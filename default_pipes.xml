@@ -8,4 +8,7 @@
   <class type="unbag2::ImuPipe" base_class_type="unbag2::Pipe">
     <description>Writes IMU into a JSON file.</description>
   </class>
+  <class type="unbag2::LoggerPipe" base_class_type="unbag2::Pipe">
+    <description>Logs information.</description>
+  </class>
 </library>
