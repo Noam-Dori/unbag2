@@ -1,1 +1,1 @@
-Copyright (c) 2020 Perfetto Modular Laboratory. All rights reserved.
+Copyright (c) 2020 Perfetto Team. All rights reserved.
